@@ -1,18 +1,27 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Image, View, ImageRequireSource } from 'react-native';
+import {
+	StyleSheet,
+	Image,
+	View,
+	ImageRequireSource,
+	SafeAreaView,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
 import Button from './component/Button';
 import ImageViewer from './component/ImageViewer';
+import IconButton from './component/IconButton';
+import CircleButton from './component/CircleButton';
+import EmojiPicker from './component/EmojiPicker';
+import EmojiList from './component/EmojiList';
+import EmojiSticker from './component/EmojiSticker';
 
 const PlaceholderImage: ImageRequireSource = require('./assets/images/background-image.png');
 
 type ImagePathType = string | null;
 
 const App = () => {
-	const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
-
 	// 画像を一枚選択
 	// Stateの変数型を<>で指定
 	const [selectedImage, setSelectedImage] = useState<ImagePathType>(null);
@@ -31,17 +40,57 @@ const App = () => {
 		}
 	};
 
+	// 選択オプション表示するか
+	const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+
+	// 三つのボタン
+	const onReset = () => {
+		setShowAppOptions(false);
+	};
+
+	const onAddSticker = () => {
+		setIsModalVisible(true);
+	};
+
+	const onModalClose = () => {
+		setIsModalVisible(false);
+	};
+
+	const onSaveImageAsync = async () => {};
+
+	// モーダルの表示オプション
+	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+	// どんな絵文字を選択するか？
+	const [pickedEmoji, setPickedEmoji] = useState<number | null>(null);
+
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
+			<StatusBar style="inverted" />
 			<View style={styles.imageContainer}>
 				<ImageViewer
 					placeholderImageSource={PlaceholderImage}
 					selectedImage={selectedImage}
 				/>
-				<StatusBar style="auto" />
+				{pickedEmoji && (
+					<EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
+				)}
 			</View>
+			<EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+				<EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+			</EmojiPicker>
 			{showAppOptions ? (
-				<View />
+				<View style={styles.footerContainer}>
+					<View style={styles.optionsRow}>
+						<IconButton icon="refresh" label="Reset" onPress={onReset} />
+						<CircleButton onPress={onAddSticker} />
+						<IconButton
+							icon="save-alt"
+							label="Save"
+							onPress={onSaveImageAsync}
+						/>
+					</View>
+				</View>
 			) : (
 				<View style={styles.footerContainer}>
 					<Button
@@ -55,7 +104,7 @@ const App = () => {
 					/>
 				</View>
 			)}
-		</View>
+		</SafeAreaView>
 	);
 };
 
@@ -70,7 +119,7 @@ const styles = StyleSheet.create({
 	},
 	imageContainer: {
 		flex: 3,
-		paddingTop: 58,
+		paddingTop: 40,
 	},
 	image: {
 		width: 320,
@@ -80,5 +129,13 @@ const styles = StyleSheet.create({
 	footerContainer: {
 		flex: 1,
 		alignItems: 'center',
+	},
+	optionsContainer: {
+		//		position: 'absolute',
+		//		bottom: 80,
+	},
+	optionsRow: {
+		alignItems: 'center',
+		flexDirection: 'row',
 	},
 });

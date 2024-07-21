@@ -13,7 +13,7 @@ type PropsCircleButton = {
 const CircleButton = ({ onPress }: PropsCircleButton) => {
 	return (
 		<View style={styles.circleButtonContainer}>
-			<Pressable onPress={onPress}>
+			<Pressable style={styles.circleButton} onPress={onPress}>
 				<MaterialIcons name="add" size={38} color="#25292e" />
 			</Pressable>
 		</View>
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
 		borderRadius: 42,
 		padding: 3,
 	},
-	CircleButton: {
+	circleButton: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',

@@ -3,11 +3,11 @@ import {
 	Pressable,
 	StyleSheet,
 	Text,
-} from 'react-native/types';
+} from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 type PropsIconButton = {
-	icon: any; // これを "key" | "article" | "code" | ... | undefined にしたい
+	icon: any; // これを "key" | "article" | "code" | ... | undefined にしたい -> どこから取得すればいい？
 	label: string;
 	onPress: (event: GestureResponderEvent) => void;
 };
