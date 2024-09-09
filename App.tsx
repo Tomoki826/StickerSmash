@@ -5,10 +5,14 @@ import {
 	View,
 	ImageRequireSource,
 	SafeAreaView,
+	Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as MediaLibrary from 'expo-media-library';
+import { captureRef } from 'react-native-view-shot';
+import domtoimage from 'dom-to-image';
 
 import Button from './component/Button';
 import ImageViewer from './component/ImageViewer';
@@ -23,6 +27,16 @@ const PlaceholderImage: ImageRequireSource = require('./assets/images/background
 type ImagePathType = string | null;
 
 const App = () => {
+	// スクショの領域を設定
+	const imageRef = useRef();
+
+	// メディアのアクセス許可の画面
+	const [status, requestPermission] = MediaLibrary.usePermissions();
+
+	if (status === null) {
+		requestPermission();
+	}
+
 	// 画像を一枚選択
 	// Stateの変数型を<>で指定
 	const [selectedImage, setSelectedImage] = useState<ImagePathType>(null);
@@ -57,7 +71,38 @@ const App = () => {
 		setIsModalVisible(false);
 	};
 
-	const onSaveImageAsync = async () => {};
+	// スクリーンショットを撮影
+	const onSaveImageAsync = async () => {
+		if (Platform.OS !== 'web') {
+			try {
+				const localUri = await captureRef(imageRef, {
+					height: 440,
+					quality: 1,
+				});
+				await MediaLibrary.saveToLibraryAsync(localUri);
+				if (localUri) {
+					alert('Saved!');
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		} else {
+			try {
+				const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+					quality: 0.95,
+					width: 320,
+					height: 440,
+				});
+
+				let link = document.createElement('a');
+				link.download = 'sticker-smash.jpeg';
+				link.href = dataUrl;
+				link.click();
+			} catch (e) {
+				console.log(e);
+			}
+		}
+	};
 
 	// モーダルの表示オプション
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -67,16 +112,18 @@ const App = () => {
 
 	return (
 		<GestureHandlerRootView>
-			<StatusBar style="inverted" />
+			<StatusBar style="light" />
 			<SafeAreaView style={styles.container}>
 				<View style={styles.imageContainer}>
-					<ImageViewer
-						placeholderImageSource={PlaceholderImage}
-						selectedImage={selectedImage}
-					/>
-					{pickedEmoji && (
-						<EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
-					)}
+					<View ref={imageRef} collapsable={false}>
+						<ImageViewer
+							placeholderImageSource={PlaceholderImage}
+							selectedImage={selectedImage}
+						/>
+						{pickedEmoji && (
+							<EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
+						)}
+					</View>
 				</View>
 				<EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
 					<EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
